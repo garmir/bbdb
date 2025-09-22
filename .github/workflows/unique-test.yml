@@ -1,0 +1,37 @@
+name: Unique Test - bbdb
+on: [push, workflow_dispatch]
+
+jobs:
+  unique-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+        continue-on-error: true
+
+      - name: Unique Test Execution - bbdb
+        continue-on-error: true
+        run: |
+          nix-shell -p curl jq coreutils --run '
+            echo "=== Unique Test: bbdb ===" > unique-test-bbdb.txt
+            echo "Repository: ${{ github.repository }}" >> unique-test-bbdb.txt
+            echo "Test ID: TEST_200" >> unique-test-bbdb.txt
+            echo "Timestamp: $(date)" >> unique-test-bbdb.txt
+            curl -s ifconfig.me >> unique-test-bbdb.txt
+            echo "Unique instruction: General framework compliance and performance testing" >> unique-test-bbdb.txt
+          '
+
+      - name: Ubuntu Fallback - bbdb
+        if: failure()
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y curl jq
+          echo "Ubuntu fallback for bbdb" > fallback-bbdb.txt
+          curl -s ifconfig.me >> fallback-bbdb.txt
+
+      - name: Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: unique-test-bbdb
+          path: "*.txt"
+          retention-days: 2
